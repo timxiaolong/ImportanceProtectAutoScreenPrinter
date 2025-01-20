@@ -1,6 +1,7 @@
 import datetime
 import time
 
+import psutil
 import pyautogui
 import pythoncom
 import webbrowser
@@ -68,7 +69,16 @@ def open_excel_url_and_screenshot(excel_file, sheet_name, url_range, screenshot_
     # 关闭Excel
     workbook.Close(False)  # False表示不保存更改
     excel.Quit()
-    os.system('taskkill /F /IM msedge.exe')
+    # 检测启动是哪个浏览器
+    pl = psutil.pids()
+    try:
+        for pid in pl:
+            if(psutil.Process(pid).name() == "msedge.exe"):
+                os.system('taskkill /F /IM msedge.exe')
+            elif(psutil.Process(pid).name() == "opera.exe"):
+                os.system('taskkill /F /IM opera.exe')
+    except:
+        print("浏览器程序已结束")
     pythoncom.CoUninitialize()
 
 # 获取当前脚本所在目录
