@@ -1,13 +1,13 @@
-import datetime
+import os
 import time
+import webbrowser
 
 import psutil
 import pyautogui
 import pythoncom
-import webbrowser
 import win32com.client
-import os
 from apscheduler.schedulers.blocking import BlockingScheduler
+
 
 def job():
     global Prosstimes
@@ -15,7 +15,8 @@ def job():
     # 获取url表格
     excel_file = os.path.join(current_dir, 'url.xlsx')
     sheet_name = 'Sheet1'
-    url_range = 'A1:A76'
+    # 选取表格链接的区间
+    url_range = 'A1:A86'
     screenshot_region = (0, 35, 1920, 1045)  # 例如，截取从坐标(100, 200)开始，宽800像素，高600像素的区域
     open_excel_url_and_screenshot(excel_file, sheet_name, url_range, screenshot_region,creat_time_folder())
     print("第"+str(Prosstimes)+"次任务在"+time.strftime("%Y-%m-%d,%H:%M:%S")+"结束，等待运行下一次")
