@@ -1,3 +1,4 @@
+import math
 import os
 import time
 import webbrowser
@@ -6,20 +7,32 @@ import psutil
 import pyautogui
 import pythoncom
 import win32com.client
+import schedule
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 
 def job():
     global Prosstimes
+    excel_file = ''
+    sheet_name = ''
+    url_range = ''
     print("在"+time.strftime("%Y-%m-%d,%H:%M:%S")+"执行第"+str(Prosstimes)+"任务")
     # 获取url表格
-    excel_file = os.path.join(current_dir, 'url.xlsx')
-    sheet_name = 'Sheet1'
-    # 选取表格链接的区间
-    url_range = 'A1:A86'
+    if num == '1':
+        excel_file = os.path.join(current_dir, 'url.xlsx')
+        sheet_name = 'Sheet1'
+        # 选取表格链接的区间
+        url_range = 'A1:A100'
+    elif num == '2':
+        excel_file = os.path.join(current_dir, 'connectUrl.xlsx')
+        sheet_name = 'Sheet1'
+        # 选取表格链接的区间
+        url_range = 'A1:A100'
     screenshot_region = (0, 35, 1920, 1045)  # 例如，截取从坐标(100, 200)开始，宽800像素，高600像素的区域
     open_excel_url_and_screenshot(excel_file, sheet_name, url_range, screenshot_region,creat_time_folder())
     print("第"+str(Prosstimes)+"次任务在"+time.strftime("%Y-%m-%d,%H:%M:%S")+"结束，等待运行下一次")
+    global retry_times
+    retry_times = 1
     Prosstimes = Prosstimes + 1
 
 
@@ -59,12 +72,13 @@ def open_excel_url_and_screenshot(excel_file, sheet_name, url_range, screenshot_
         if url:  # 判断单元格是否有值
             webbrowser.open(url)
             # 等待页面加载（可根据实际情况调整等待时间）
-            time.sleep(10)
+            time.sleep(28)
             # 截取屏幕
             screenshot = pyautogui.screenshot(region=screenshot_region)
             file_name = 'screenshot'+flag_str+'.png'
             os.chdir(current_dir+'/'+'/'+folder_name)
             screenshot.save(file_name)  # 保存截图
+            print("第"+str(flag)+"次截屏，URL为："+url)
             flag = flag + 1
 
     # 关闭Excel
@@ -85,9 +99,25 @@ def open_excel_url_and_screenshot(excel_file, sheet_name, url_range, screenshot_
 # 获取当前脚本所在目录
 current_dir = os.path.dirname(os.path.abspath(__file__))
 Prosstimes = 1
-job()
-scheduler = BlockingScheduler()
-scheduler.add_job(job, 'interval', seconds=30)
-scheduler.start()
+flag = 1
+retry_times = 1
+print("1.全部截屏")
+print("2.截可以访问")
+num=input("请输入：")
+schedule.every().hour.at(":10").do(job)
+print("已设置为每小时的第10分运行程序")
+while True:
+    print("当前非运行时间，等待30秒，当前重试次数："+str(retry_times))
+    schedule.run_pending()
+    time.sleep(30)
+    os.system('cls')
+    retry_times = retry_times + 1
+# job()
+# scheduler = BlockingScheduler()
+# 计算下次运行时间
+# time = math.floor(flag * 28 / 60)
+
+# scheduler.add_job(job, 'interval', minutes=60-time)
+# scheduler.start()
 
 
